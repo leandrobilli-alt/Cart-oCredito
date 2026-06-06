@@ -53,6 +53,18 @@ function reducer(state, action) {
       saveState(next)
       return next
     }
+    case 'DELETE_INVOICE': {
+      const next = {
+        ...state,
+        invoices: state.invoices.filter(i => i.id !== action.id),
+        // Remove também os lançamentos vinculados se solicitado
+        transactions: action.deleteTransactions
+          ? state.transactions.filter(t => t.invoiceId !== action.id)
+          : state.transactions,
+      }
+      saveState(next)
+      return next
+    }
     // Cria todas as parcelas de uma vez + auto-cria as faturas necessárias
     case 'ADD_INSTALLMENTS': {
       const { newInvoices, newTransactions } = action.payload

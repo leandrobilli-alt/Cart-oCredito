@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
-import { Plus, ChevronDown, Upload } from 'lucide-react'
+import { Plus, ChevronDown, Upload, Trash2 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { formatCurrency, groupByCategory } from '../utils/format'
 import { getCategoryById } from '../data/categories'
@@ -87,7 +87,27 @@ function AddInvoiceModal({ onClose }) {
 }
 
 export default function Invoices() {
-  const { state } = useApp()
+  const { state, dispatch } = useApp()
+
+  function deleteInvoice(inv, e) {
+    e.stopPropagation()
+    const count = state.transactions.filter(t => t.invoiceId === inv.id).length
+    const msg = count > 0
+      ? `Excluir a fatura "${inv.label}"?\n\nEla possui ${count} lançamentos. Deseja excluir os lançamentos também?\n\nOK = excluir fatura e lançamentos\nCancelar = apenas excluir a fatura`
+      : `Excluir a fatura "${inv.label}"?`
+
+    if (count > 0) {
+      const withTx = window.confirm(msg)
+      // Se o usuário cancelou o confirm, não faz nada
+      // confirm retorna false em "Cancelar", true em "OK"
+      dispatch({ type: 'DELETE_INVOICE', id: inv.id, deleteTransactions: withTx })
+    } else {
+      if (window.confirm(`Excluir a fatura "${inv.label}"?`)) {
+        dispatch({ type: 'DELETE_INVOICE', id: inv.id, deleteTransactions: false })
+      }
+    }
+    setExpanded(e2 => e2 === inv.id ? null : e2)
+  }
   const [expanded, setExpanded] = useState(state.invoices[0]?.id || null)
   const [selected, setSelected] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
@@ -156,28 +176,37 @@ export default function Invoices() {
         return (
           <div key={inv.id} className="card !p-0 overflow-hidden">
             {/* Header */}
-            <button
-              className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors"
-              onClick={() => setExpanded(isOpen ? null : inv.id)}
-            >
-              <div className="text-left">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="font-semibold text-gray-900">{inv.label}</span>
-                  <StatusBadge status={inv.status} />
+            <div className="flex items-center">
+              <button
+                className="flex-1 flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+                onClick={() => setExpanded(isOpen ? null : inv.id)}
+              >
+                <div className="text-left">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="font-semibold text-gray-900">{inv.label}</span>
+                    <StatusBadge status={inv.status} />
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    Fecha {inv.closeDate ? new Date(inv.closeDate + 'T12:00:00').toLocaleDateString('pt-BR') : '--'} ·
+                    Vence {inv.dueDate ? new Date(inv.dueDate + 'T12:00:00').toLocaleDateString('pt-BR') : '--'}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-400">
-                  Fecha {inv.closeDate ? new Date(inv.closeDate + 'T12:00:00').toLocaleDateString('pt-BR') : '--'} ·
-                  Vence {inv.dueDate ? new Date(inv.dueDate + 'T12:00:00').toLocaleDateString('pt-BR') : '--'}
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <div className="font-bold text-gray-900">{formatCurrency(inv.computedTotal)}</div>
+                    <div className="text-xs text-gray-400">{inv.count} compras</div>
+                  </div>
+                  <ChevronDown size={18} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <div className="font-bold text-gray-900">{formatCurrency(inv.computedTotal)}</div>
-                  <div className="text-xs text-gray-400">{inv.count} compras</div>
-                </div>
-                <ChevronDown size={18} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-              </div>
-            </button>
+              </button>
+              <button
+                onClick={e => deleteInvoice(inv, e)}
+                className="px-3 py-4 text-gray-300 hover:text-red-500 transition-colors flex-shrink-0"
+                title="Excluir fatura"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
 
             {/* Expanded content */}
             {isOpen && (
