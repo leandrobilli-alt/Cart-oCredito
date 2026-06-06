@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-4;
+  }
+  .btn-primary {
+    @apply bg-nu-purple text-white px-4 py-2 rounded-lg hover:bg-nu-hover transition-colors text-sm font-medium;
+  }
+  .btn-ghost {
+    @apply text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm;
+  }
+  .tab-active {
+    @apply text-nu-purple border-b-2 border-nu-purple;
+  }
+  .tab-inactive {
+    @apply text-gray-500 hover:text-gray-700;
+  }
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
