@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { X } from 'lucide-react'
 import { CATEGORIES } from '../data/categories'
 import { useApp } from '../context/AppContext'
@@ -6,16 +6,45 @@ import { format } from 'date-fns'
 
 let nextId = Date.now()
 
+const PT_MONTHS = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+]
+
+function buildMonthOptions() {
+  const options = []
+  const currentYear = new Date().getFullYear()
+  // Gera anos anteriores, atual e próximo
+  for (const year of [currentYear - 1, currentYear, currentYear + 1]) {
+    for (let m = 0; m < 12; m++) {
+      const month = String(m + 1).padStart(2, '0')
+      options.push({
+        id: `inv-${year}-${month}`,
+        month: `${year}-${month}`,
+        label: `${PT_MONTHS[m]} ${year}`,
+      })
+    }
+  }
+  return options
+}
+
 export default function AddTransactionModal({ onClose }) {
   const { dispatch, state } = useApp()
+
+  // Mês atual como padrão da fatura
+  const defaultMonth = format(new Date(), 'yyyy-MM')
+  const defaultInvoiceId = `inv-${defaultMonth}`
+
   const [form, setForm] = useState({
     date: format(new Date(), 'yyyy-MM-dd'),
     description: '',
     amount: '',
     category: 'outros',
     installment: '',
-    invoiceId: state.invoices[0]?.id || '',
+    invoiceId: defaultInvoiceId,
   })
+
+  const monthOptions = useMemo(() => buildMonthOptions(), [])
 
   function set(key, val) {
     setForm(f => ({ ...f, [key]: val }))
@@ -24,6 +53,34 @@ export default function AddTransactionModal({ onClose }) {
   function save(e) {
     e.preventDefault()
     if (!form.description || !form.amount) return
+
+    // Cria a fatura automaticamente se ainda não existir
+    const exists = state.invoices.some(i => i.id === form.invoiceId)
+    if (!exists) {
+      const opt = monthOptions.find(o => o.id === form.invoiceId)
+      const [year, mon] = opt.month.split('-').map(Number)
+      const close = `${opt.month}-${String(state.settings.closeDay).padStart(2, '0')}`
+      const dueMonth = mon === 12
+        ? `${year + 1}-01`
+        : `${year}-${String(mon + 1).padStart(2, '0')}`
+      const due = `${dueMonth}-${String(state.settings.dueDay).padStart(2, '0')}`
+
+      dispatch({
+        type: 'ADD_INVOICE',
+        payload: {
+          id: opt.id,
+          month: opt.month,
+          label: opt.label,
+          closeDate: close,
+          dueDate: due,
+          totalAmount: 0,
+          totalPurchases: 0,
+          creditLimit: state.settings.creditLimit,
+          status: 'open',
+        },
+      })
+    }
+
     dispatch({
       type: 'ADD_TRANSACTION',
       payload: {
@@ -33,7 +90,7 @@ export default function AddTransactionModal({ onClose }) {
         amount: parseFloat(form.amount.replace(',', '.')),
         category: form.category,
         installment: form.installment || undefined,
-        invoiceId: form.invoiceId || undefined,
+        invoiceId: form.invoiceId,
       },
     })
     onClose()
@@ -102,8 +159,11 @@ export default function AddTransactionModal({ onClose }) {
                 value={form.invoiceId}
                 onChange={e => set('invoiceId', e.target.value)}
               >
-                {state.invoices.map(inv => (
-                  <option key={inv.id} value={inv.id}>{inv.label}</option>
+                {monthOptions.map(opt => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.label}
+                    {state.invoices.some(i => i.id === opt.id) ? ' ✓' : ''}
+                  </option>
                 ))}
               </select>
             </div>
