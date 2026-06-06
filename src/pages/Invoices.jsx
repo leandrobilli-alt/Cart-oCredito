@@ -2,12 +2,13 @@ import { useMemo, useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
-import { Plus, ChevronDown } from 'lucide-react'
+import { Plus, ChevronDown, Upload } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { formatCurrency, groupByCategory } from '../utils/format'
 import { getCategoryById } from '../data/categories'
 import TransactionItem from '../components/TransactionItem'
 import EditTransactionModal from '../components/EditTransactionModal'
+import ImportInvoiceModal from '../components/ImportInvoiceModal'
 
 function StatusBadge({ status }) {
   const map = {
@@ -90,6 +91,7 @@ export default function Invoices() {
   const [expanded, setExpanded] = useState(state.invoices[0]?.id || null)
   const [selected, setSelected] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
+  const [showImport, setShowImport] = useState(false)
 
   const invoicesWithTotals = useMemo(() =>
     state.invoices.map(inv => {
@@ -117,9 +119,14 @@ export default function Invoices() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-gray-900">Histórico de faturas</h2>
-        <button onClick={() => setShowAdd(true)} className="btn-primary flex items-center gap-1.5">
-          <Plus size={15} /> Nova fatura
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setShowImport(true)} className="btn-ghost border border-gray-200 flex items-center gap-1.5">
+            <Upload size={15} /> Importar CSV
+          </button>
+          <button onClick={() => setShowAdd(true)} className="btn-primary flex items-center gap-1.5">
+            <Plus size={15} /> Nova
+          </button>
+        </div>
       </div>
 
       {/* Monthly comparison */}
@@ -230,6 +237,7 @@ export default function Invoices() {
 
       {selected && <EditTransactionModal transaction={selected} onClose={() => setSelected(null)} />}
       {showAdd && <AddInvoiceModal onClose={() => setShowAdd(false)} />}
+      {showImport && <ImportInvoiceModal onClose={() => setShowImport(false)} />}
     </div>
   )
 }
