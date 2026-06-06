@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { X } from 'lucide-react'
 import { CATEGORIES } from '../data/categories'
 import { useApp } from '../context/AppContext'
@@ -11,40 +11,25 @@ const PT_MONTHS = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
-function buildMonthOptions() {
-  const options = []
-  const currentYear = new Date().getFullYear()
-  // Gera anos anteriores, atual e próximo
-  for (const year of [currentYear - 1, currentYear, currentYear + 1]) {
-    for (let m = 0; m < 12; m++) {
-      const month = String(m + 1).padStart(2, '0')
-      options.push({
-        id: `inv-${year}-${month}`,
-        month: `${year}-${month}`,
-        label: `${PT_MONTHS[m]} ${year}`,
-      })
-    }
-  }
-  return options
+const YEARS = [2024, 2025, 2026, 2027]
+
+function makeInvoiceId(month, year) {
+  return `inv-${year}-${String(month).padStart(2, '0')}`
 }
 
 export default function AddTransactionModal({ onClose }) {
   const { dispatch, state } = useApp()
 
-  // Mês atual como padrão da fatura
-  const defaultMonth = format(new Date(), 'yyyy-MM')
-  const defaultInvoiceId = `inv-${defaultMonth}`
-
+  const now = new Date()
   const [form, setForm] = useState({
-    date: format(new Date(), 'yyyy-MM-dd'),
+    date: format(now, 'yyyy-MM-dd'),
     description: '',
     amount: '',
     category: 'outros',
     installment: '',
-    invoiceId: defaultInvoiceId,
+    invoiceMonth: now.getMonth() + 1,   // 1-12
+    invoiceYear: now.getFullYear(),
   })
-
-  const monthOptions = useMemo(() => buildMonthOptions(), [])
 
   function set(key, val) {
     setForm(f => ({ ...f, [key]: val }))
@@ -54,23 +39,24 @@ export default function AddTransactionModal({ onClose }) {
     e.preventDefault()
     if (!form.description || !form.amount) return
 
+    const invoiceId = makeInvoiceId(form.invoiceMonth, form.invoiceYear)
+    const monthStr = String(form.invoiceMonth).padStart(2, '0')
+    const monthKey = `${form.invoiceYear}-${monthStr}`
+
     // Cria a fatura automaticamente se ainda não existir
-    const exists = state.invoices.some(i => i.id === form.invoiceId)
+    const exists = state.invoices.some(i => i.id === invoiceId)
     if (!exists) {
-      const opt = monthOptions.find(o => o.id === form.invoiceId)
-      const [year, mon] = opt.month.split('-').map(Number)
-      const close = `${opt.month}-${String(state.settings.closeDay).padStart(2, '0')}`
-      const dueMonth = mon === 12
-        ? `${year + 1}-01`
-        : `${year}-${String(mon + 1).padStart(2, '0')}`
-      const due = `${dueMonth}-${String(state.settings.dueDay).padStart(2, '0')}`
+      const close = `${monthKey}-${String(state.settings.closeDay).padStart(2, '0')}`
+      const nextMon = form.invoiceMonth === 12 ? 1 : form.invoiceMonth + 1
+      const nextYear = form.invoiceMonth === 12 ? form.invoiceYear + 1 : form.invoiceYear
+      const due = `${nextYear}-${String(nextMon).padStart(2, '0')}-${String(state.settings.dueDay).padStart(2, '0')}`
 
       dispatch({
         type: 'ADD_INVOICE',
         payload: {
-          id: opt.id,
-          month: opt.month,
-          label: opt.label,
+          id: invoiceId,
+          month: monthKey,
+          label: `${PT_MONTHS[form.invoiceMonth - 1]} ${form.invoiceYear}`,
           closeDate: close,
           dueDate: due,
           totalAmount: 0,
@@ -90,7 +76,7 @@ export default function AddTransactionModal({ onClose }) {
         amount: parseFloat(form.amount.replace(',', '.')),
         category: form.category,
         installment: form.installment || undefined,
-        invoiceId: form.invoiceId,
+        invoiceId,
       },
     })
     onClose()
@@ -141,29 +127,36 @@ export default function AddTransactionModal({ onClose }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-gray-500 block mb-1">Parcela (ex: 1/12)</label>
-              <input
-                type="text"
-                placeholder="opcional"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-nu-purple/30"
-                value={form.installment}
-                onChange={e => set('installment', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-xs text-gray-500 block mb-1">Fatura</label>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">Parcela (ex: 1/12)</label>
+            <input
+              type="text"
+              placeholder="opcional"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-nu-purple/30"
+              value={form.installment}
+              onChange={e => set('installment', e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">Fatura</label>
+            <div className="grid grid-cols-2 gap-2">
               <select
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-nu-purple/30"
-                value={form.invoiceId}
-                onChange={e => set('invoiceId', e.target.value)}
+                value={form.invoiceMonth}
+                onChange={e => set('invoiceMonth', Number(e.target.value))}
               >
-                {monthOptions.map(opt => (
-                  <option key={opt.id} value={opt.id}>
-                    {opt.label}
-                    {state.invoices.some(i => i.id === opt.id) ? ' ✓' : ''}
-                  </option>
+                {PT_MONTHS.map((name, i) => (
+                  <option key={i + 1} value={i + 1}>{name}</option>
+                ))}
+              </select>
+              <select
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-nu-purple/30"
+                value={form.invoiceYear}
+                onChange={e => set('invoiceYear', Number(e.target.value))}
+              >
+                {YEARS.map(y => (
+                  <option key={y} value={y}>{y}</option>
                 ))}
               </select>
             </div>
