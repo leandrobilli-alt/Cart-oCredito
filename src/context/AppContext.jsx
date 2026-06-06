@@ -53,6 +53,19 @@ function reducer(state, action) {
       saveState(next)
       return next
     }
+    // Cria todas as parcelas de uma vez + auto-cria as faturas necessárias
+    case 'ADD_INSTALLMENTS': {
+      const { newInvoices, newTransactions } = action.payload
+      const existingIds = new Set(state.invoices.map(i => i.id))
+      const invoicesToAdd = newInvoices.filter(i => !existingIds.has(i.id))
+      const next = {
+        ...state,
+        invoices: [...invoicesToAdd, ...state.invoices],
+        transactions: [...newTransactions, ...state.transactions],
+      }
+      saveState(next)
+      return next
+    }
     case 'RESET': {
       const fresh = {
         transactions: INITIAL_TRANSACTIONS,
