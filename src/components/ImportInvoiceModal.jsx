@@ -89,15 +89,12 @@ function parseCSV(text) {
     if (isNaN(amount) || !date) continue
 
     // No Nubank: negativos = compras, positivos = pagamentos/estornos
-    // Em outros formatos pode ser o contrário — inferimos pelo sinal
-    const isRefund = amount > 0 && /estorno|pagamento|reembolso|credito/i.test(rawDesc)
-
     transactions.push({
       _id:        `imp-${Date.now()}-${i}`,
       date,
       description: rawDesc,
       amount:      Math.abs(amount),
-      isRefund:    amount > 0 && !isRefund,
+      isRefund:    amount > 0,
       category:    guessCategory(rawDesc),
       nuCategory:  nuCat,
     })
