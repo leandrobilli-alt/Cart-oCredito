@@ -9,8 +9,18 @@ function loadState() {
     const raw = localStorage.getItem('cc_dashboard_v2')
     if (raw) {
       const parsed = JSON.parse(raw)
-      // migração: adiciona categories se não existir
-      if (!parsed.categories) parsed.categories = CATEGORIES
+      if (!parsed.categories) {
+        parsed.categories = CATEGORIES
+      } else {
+        // migração: adiciona novas categorias padrão que ainda não existem
+        const existingIds = new Set(parsed.categories.map(c => c.id))
+        const newDefaults = CATEGORIES.filter(c => !existingIds.has(c.id))
+        if (newDefaults.length > 0) {
+          const outrosIdx = parsed.categories.findIndex(c => c.id === 'outros')
+          if (outrosIdx >= 0) parsed.categories.splice(outrosIdx, 0, ...newDefaults)
+          else parsed.categories.push(...newDefaults)
+        }
+      }
       return parsed
     }
   } catch {}

@@ -11,8 +11,9 @@ const YEARS = [2024, 2025, 2026, 2027, 2028]
 
 // ── Auto-categorização por palavras-chave ──────────────────────────────────
 const KEYWORD_MAP = [
+  { cat: 'uber',         kw: ['uber','uberrides','dl *uber','dl*uber','uber*'] },
   { cat: 'delivery',     kw: ['ifood','rappi','james','delivery'] },
-  { cat: 'transporte',   kw: ['uber','uberrides','99taxi','cabify','dl *uber','dl*uber','99app','blablacar'] },
+  { cat: 'transporte',   kw: ['99taxi','cabify','99app','blablacar','metro ','onibus','bilhete'] },
   { cat: 'pet',          kw: ['petlove','petshop','petz','cobasi','vet','breeds','animais','pet love'] },
   { cat: 'assinaturas',  kw: ['netflix','spotify','youtube','amazon prime','disney','hbo','globoplay','deezer','google one','apple','paramount','crunchyroll','kiwify','hotmart'] },
   { cat: 'supermercado', kw: ['supermercado','mercado','carrefour','pao de acucar','extra ','atacadao','walmart','yamauchi','swift','sonda','hortifruti','bergamini','zaffari'] },
@@ -21,10 +22,13 @@ const KEYWORD_MAP = [
   { cat: 'compras',      kw: ['amazon','shopee','mercado livre','aliexpress','magazine','americanas','casas bahia','submarino'] },
   { cat: 'educacao',     kw: ['escola','universidade','ibmec','anhanguera','curso','livraria','editora','estrategia','kiwify','estudo','enem','concurso','desafioedv'] },
   { cat: 'contas',       kw: ['comgas','enel','eletropaulo','sabesp','vivo','tim','claro','oi ','internet','nucell','nucel','dlknet','light ','cemig','copel','cpfl','telefon'] },
-  { cat: 'vestuario',    kw: ['renner','zara','inditex','centauro','c&a','hering','riachuelo','marisa','vivara','arezzo','calcado','calcad','shopping','lojas mel','lojas ren','ljv'] },
+  { cat: 'vestuario',    kw: ['renner','zara','inditex','centauro','c&a','hering','riachuelo','marisa','vivara','arezzo','calcado','calcad','lojas mel','lojas ren','ljv'] },
+  { cat: 'shopping',     kw: ['shopping','mall','parque shopping','center shopping'] },
   { cat: 'trabalho',     kw: ['coworking','oab','advogado','escritorio','odptech','smart cowork','ordem dos'] },
   { cat: 'seguros',      kw: ['seguro','nu seguro'] },
+  { cat: 'pix',          kw: ['pix ','transf pix','transferencia pix','via pix','pix-','pix/'] },
   { cat: 'financeiro',   kw: ['iof','juros','rotativo','parcelamento de fatura'] },
+  { cat: 'pagamentos',   kw: ['pagamento antecipado','pag antecipado','pag. antec','fatura paga'] },
   { cat: 'casa',         kw: ['suvinil','leroy','telha','material de constru','armarinhos','monopoly','ecoassist','casa do'] },
 ]
 
