@@ -274,7 +274,7 @@ export default function Reports() {
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${cat.pct}%`, backgroundColor: cat.color }}
+                    style={{ width: `${(cat.value / catData[0].value) * 100}%`, backgroundColor: cat.color }}
                   />
                 </div>
               </div>
