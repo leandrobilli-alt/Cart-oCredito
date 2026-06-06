@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { LayoutDashboard, List, FileText, BarChart2, Settings, RotateCcw } from 'lucide-react'
+import { LayoutDashboard, List, FileText, BarChart2, Settings, RotateCcw, Tag } from 'lucide-react'
 import { AppProvider, useApp } from './context/AppContext'
+import CategoryManagerModal from './components/CategoryManagerModal'
 import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
 import Invoices from './pages/Invoices'
@@ -13,7 +14,7 @@ const TABS = [
   { id: 'reports',      label: 'Relatórios',   icon: BarChart2 },
 ]
 
-function SettingsModal({ onClose }) {
+function SettingsModal({ onClose, onOpenCategories }) {
   const { state, dispatch } = useApp()
   const [form, setForm] = useState({ ...state.settings })
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -74,6 +75,12 @@ function SettingsModal({ onClose }) {
         >
           <RotateCcw size={13} /> Restaurar dados de exemplo
         </button>
+        <button
+          onClick={() => { onClose(); onOpenCategories() }}
+          className="mt-1 w-full flex items-center justify-center gap-2 text-xs text-gray-500 hover:text-nu-purple transition-colors py-2"
+        >
+          <Tag size={13} /> Gerenciar categorias
+        </button>
       </div>
     </div>
   )
@@ -82,6 +89,7 @@ function SettingsModal({ onClose }) {
 function AppContent() {
   const [tab, setTab] = useState('dashboard')
   const [showSettings, setShowSettings] = useState(false)
+  const [showCategories, setShowCategories] = useState(false)
   const { state } = useApp()
 
   const pages = {
@@ -150,7 +158,8 @@ function AppContent() {
         </div>
       </nav>
 
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onOpenCategories={() => setShowCategories(true)} />}
+      {showCategories && <CategoryManagerModal onClose={() => setShowCategories(false)} />}
     </div>
   )
 }

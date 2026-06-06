@@ -5,7 +5,7 @@ import {
 import { Plus, ChevronDown, Upload, Trash2 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { formatCurrency, groupByCategory } from '../utils/format'
-import { getCategoryById } from '../data/categories'
+import { useCategories } from '../context/AppContext'
 import TransactionItem from '../components/TransactionItem'
 import EditTransactionModal from '../components/EditTransactionModal'
 import ImportInvoiceModal from '../components/ImportInvoiceModal'
@@ -88,6 +88,7 @@ function AddInvoiceModal({ onClose }) {
 
 export default function Invoices() {
   const { state, dispatch } = useApp()
+  const { getCat } = useCategories()
 
   function deleteInvoice(inv, e) {
     e.stopPropagation()
@@ -121,7 +122,7 @@ export default function Invoices() {
       const topCats = Object.entries(catMap)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
-        .map(([id, value]) => ({ id, value, cat: getCategoryById(id) }))
+        .map(([id, value]) => ({ id, value, cat: getCat(id) }))
       return { ...inv, computedTotal: total, count: txs.length, topCats }
     }),
     [state.invoices, state.transactions]

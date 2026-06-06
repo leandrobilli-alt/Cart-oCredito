@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { X, Upload, FileText, Check, AlertCircle, ChevronDown } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import { CATEGORIES, getCategoryById } from '../data/categories'
+import { useCategories } from '../context/AppContext'
 
 const PT_MONTHS = [
   'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
@@ -112,6 +112,7 @@ let nextId = Date.now()
 
 export default function ImportInvoiceModal({ onClose }) {
   const { dispatch, state } = useApp()
+  const { categories, getCat } = useCategories()
   const fileRef = useRef()
   const [step, setStep] = useState('upload') // upload | preview | done
   const [drag, setDrag] = useState(false)
@@ -280,7 +281,7 @@ export default function ImportInvoiceModal({ onClose }) {
                 </div>
                 <div className="divide-y divide-gray-50 max-h-64 overflow-y-auto">
                   {rows.map(row => {
-                    const cat = getCategoryById(row.category)
+                    const cat = getCat(row.category)
                     return (
                       <div key={row._id} className="grid grid-cols-[80px_1fr_120px_70px] px-3 py-2 items-center text-xs">
                         <span className="text-gray-400">{row.date.slice(5).replace('-', '/')}</span>
@@ -297,7 +298,7 @@ export default function ImportInvoiceModal({ onClose }) {
                           </button>
                           {editCat === row._id && (
                             <div className="absolute left-0 top-full mt-1 z-10 bg-white border border-gray-200 rounded-xl shadow-lg w-44 max-h-52 overflow-y-auto">
-                              {CATEGORIES.map(c => (
+                              {categories.map(c => (
                                 <button
                                   key={c.id}
                                   onClick={() => updateRowCat(row._id, c.id)}

@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
 import { X, CreditCard, Layers } from 'lucide-react'
-import { CATEGORIES } from '../data/categories'
-import { useApp } from '../context/AppContext'
+import { useApp, useCategories } from '../context/AppContext'
 import { format } from 'date-fns'
 
 let nextId = Date.now()
@@ -44,6 +43,7 @@ function addMonths(month, year, n) {
 
 export default function AddTransactionModal({ onClose }) {
   const { dispatch, state } = useApp()
+  const { categories } = useCategories()
   const now = new Date()
 
   const [mode, setMode] = useState('single') // 'single' | 'installment'
@@ -299,7 +299,7 @@ export default function AddTransactionModal({ onClose }) {
             <div>
               <label className="text-xs text-gray-500 block mb-2">Categoria</label>
               <div className="grid grid-cols-2 gap-1.5">
-                {CATEGORIES.map(cat => (
+                {categories.map(cat => (
                   <button
                     type="button"
                     key={cat.id}

@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
 import { useApp } from '../context/AppContext'
-import { CATEGORIES, getCategoryById } from '../data/categories'
+import { useCategories } from '../context/AppContext'
 import { formatCurrency, formatShortDate, groupByDay, groupByCategory } from '../utils/format'
 import StatsCard from '../components/StatsCard'
 import TransactionItem from '../components/TransactionItem'
@@ -25,6 +25,7 @@ function CustomLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }) {
 
 export default function Dashboard() {
   const { state } = useApp()
+  const { getCat } = useCategories()
   const [selected, setSelected] = useState(null)
   const [activeInvoice, setActiveInvoice] = useState(state.invoices[0]?.id || '')
 
@@ -45,7 +46,7 @@ export default function Dashboard() {
   const catMap = useMemo(() => groupByCategory(purchases), [purchases])
   const pieData = useMemo(() =>
     Object.entries(catMap)
-      .map(([id, val]) => ({ id, name: getCategoryById(id).name, value: val, color: getCategoryById(id).color }))
+      .map(([id, val]) => ({ id, name: getCat(id).name, value: val, color: getCat(id).color }))
       .sort((a, b) => b.value - a.value),
     [catMap]
   )
@@ -128,7 +129,7 @@ export default function Dashboard() {
         />
         <StatsCard
           label="Top categoria"
-          value={topCat ? getCategoryById(topCat.id).icon + ' ' + topCat.name : '—'}
+          value={topCat ? getCat(topCat.id).icon + ' ' + topCat.name : '—'}
           sub={topCat ? formatCurrency(topCat.value) : ''}
           icon="🏆"
           color="#f97316"
@@ -171,7 +172,7 @@ export default function Dashboard() {
               {pieData.slice(0, 8).map(entry => (
                 <div key={entry.id} className="flex items-center gap-2 text-xs">
                   <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
-                  <span className="text-gray-600 truncate flex-1">{getCategoryById(entry.id).icon} {entry.name}</span>
+                  <span className="text-gray-600 truncate flex-1">{getCat(entry.id).icon} {entry.name}</span>
                   <span className="font-semibold text-gray-800 flex-shrink-0">{formatCurrency(entry.value)}</span>
                 </div>
               ))}

@@ -9,7 +9,7 @@ import {
   formatCurrency, formatShortDate, formatWeekLabel,
   groupByDay, groupByWeek, groupByMonth, groupByCategory, downloadCSV,
 } from '../utils/format'
-import { getCategoryById, CATEGORIES } from '../data/categories'
+import { useCategories } from '../context/AppContext'
 import CategoryBadge from '../components/CategoryBadge'
 
 const PERIODS = [
@@ -34,6 +34,7 @@ function TableRow({ label, value, count, pct, color }) {
 
 export default function Reports() {
   const { state } = useApp()
+  const { categories } = useCategories()
   const [period, setPeriod] = useState('daily')
   const [invoiceId, setInvoiceId] = useState(state.invoices[0]?.id || 'all')
 
@@ -65,7 +66,7 @@ export default function Reports() {
   const catData = useMemo(() => {
     const map = groupByCategory(filtered)
     const total = Object.values(map).reduce((s, v) => s + v, 0) || 1
-    return CATEGORIES
+    return categories
       .map(cat => {
         const value = map[cat.id] || 0
         const count = filtered.filter(t => t.category === cat.id).length
