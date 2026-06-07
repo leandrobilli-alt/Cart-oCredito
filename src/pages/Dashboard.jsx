@@ -9,6 +9,7 @@ import { formatCurrency, formatShortDate, groupByDay, groupByCategory, getCurren
 import StatsCard from '../components/StatsCard'
 import TransactionItem from '../components/TransactionItem'
 import EditTransactionModal from '../components/EditTransactionModal'
+import CategoryTransactionsModal from '../components/CategoryTransactionsModal'
 
 const RADIAN = Math.PI / 180
 function CustomLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }) {
@@ -27,6 +28,7 @@ export default function Dashboard() {
   const { state } = useApp()
   const { getCat } = useCategories()
   const [selected, setSelected] = useState(null)
+  const [categoryModal, setCategoryModal] = useState(null)
   const [activeInvoice, setActiveInvoice] = useState(() => getCurrentInvoiceId(state.invoices) || state.invoices[0]?.id || '')
 
   const invoice = state.invoices.find(i => i.id === activeInvoice) || state.invoices[0]
@@ -159,6 +161,8 @@ export default function Dashboard() {
                   dataKey="value"
                   labelLine={false}
                   label={<CustomLabel />}
+                  onClick={entry => setCategoryModal(getCat(entry.id))}
+                  className="cursor-pointer"
                 >
                   {pieData.map(entry => (
                     <Cell key={entry.id} fill={entry.color} />
@@ -170,11 +174,15 @@ export default function Dashboard() {
 
             <div className="w-full sm:w-auto space-y-1.5 min-w-0">
               {pieData.slice(0, 8).map(entry => (
-                <div key={entry.id} className="flex items-center gap-2 text-xs">
+                <button
+                  key={entry.id}
+                  onClick={() => setCategoryModal(getCat(entry.id))}
+                  className="w-full flex items-center gap-2 text-xs rounded-lg px-1.5 py-1 -mx-1.5 hover:bg-gray-50 transition-colors text-left"
+                >
                   <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
                   <span className="text-gray-600 truncate flex-1">{getCat(entry.id).icon} {entry.name}</span>
                   <span className="font-semibold text-gray-800 flex-shrink-0">{formatCurrency(entry.value)}</span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -210,6 +218,13 @@ export default function Dashboard() {
       </div>
 
       {selected && <EditTransactionModal transaction={selected} onClose={() => setSelected(null)} />}
+      {categoryModal && (
+        <CategoryTransactionsModal
+          category={categoryModal}
+          transactions={purchases}
+          onClose={() => setCategoryModal(null)}
+        />
+      )}
     </div>
   )
 }

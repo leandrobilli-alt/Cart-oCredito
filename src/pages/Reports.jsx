@@ -9,6 +9,7 @@ import {
   formatCurrency, formatDate, groupByDay, groupByWeek, groupByMonth,
   groupByCategory, downloadCSV, formatWeekLabel, formatShortDate, getCurrentInvoiceId,
 } from '../utils/format'
+import CategoryTransactionsModal from '../components/CategoryTransactionsModal'
 
 const PERIODS = [
   { id: 'daily',   label: 'Diário'   },
@@ -48,6 +49,7 @@ export default function Reports() {
   const [invoiceId, setInvoiceId] = useState(() => getCurrentInvoiceId(state.invoices) || 'all')
   const [showAllMerchants, setShowAllMerchants] = useState(false)
   const [showAllPurchases, setShowAllPurchases] = useState(false)
+  const [categoryModal, setCategoryModal] = useState(null)
 
   // ── Transações do período selecionado ─────────────────────────────────────
   const filtered = useMemo(() => {
@@ -236,7 +238,7 @@ export default function Reports() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="label" tick={{ fontSize: 10 }} interval={period === 'daily' ? 'preserveStartEnd' : 0} />
                 <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `R$${v >= 1000 ? (v/1000).toFixed(0)+'k' : v}`} />
-                <Tooltip formatter={(v, _, p) => [formatCurrency(v), 'Total']} labelFormatter={l => `${l} · ${p?.payload?.count || 0} lançamentos`} />
+                <Tooltip formatter={v => [formatCurrency(v), 'Total']} labelFormatter={(l, payload) => `${l} · ${payload?.[0]?.payload?.count || 0} lançamentos`} />
                 <ReferenceLine y={avgPerPeriod} stroke="#8A05BE" strokeDasharray="4 4" strokeOpacity={0.5} />
                 <Bar dataKey="total" radius={[4, 4, 0, 0]} name="Gasto">
                   {chartData.map((entry, i) => (
@@ -262,9 +264,9 @@ export default function Reports() {
           <h3 className="text-sm font-semibold text-gray-700 mb-3">Por categoria</h3>
           <div className="space-y-2.5">
             {catData.map(cat => (
-              <div key={cat.id}>
+              <button key={cat.id} onClick={() => setCategoryModal(cat)} className="w-full text-left group">
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-medium text-gray-700">{cat.icon} {cat.name}</span>
+                  <span className="font-medium text-gray-700 group-hover:text-nu-purple transition-colors">{cat.icon} {cat.name}</span>
                   <div className="flex items-center gap-2 text-gray-500">
                     <span>{cat.count} lanç.</span>
                     <span className="font-semibold text-gray-800">{formatCurrency(cat.value)}</span>
@@ -277,7 +279,7 @@ export default function Reports() {
                     style={{ width: `${(cat.value / catData[0].value) * 100}%`, backgroundColor: cat.color }}
                   />
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -382,6 +384,13 @@ export default function Reports() {
         Exportar relatório em CSV
       </button>
 
+      {categoryModal && (
+        <CategoryTransactionsModal
+          category={categoryModal}
+          transactions={filtered}
+          onClose={() => setCategoryModal(null)}
+        />
+      )}
     </div>
   )
 }
