@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useReducer } from 'react'
 import { INITIAL_TRANSACTIONS, INITIAL_INVOICE, INITIAL_SETTINGS } from '../data/sampleData'
 import { CATEGORIES } from '../data/categories'
-import { INITIAL_FINANCES } from '../data/financeData'
 
 const AppContext = createContext(null)
 
@@ -11,10 +10,6 @@ function loadState() {
     if (raw) {
       const parsed = JSON.parse(raw)
       let migrated = false
-      if (!parsed.finances) {
-        parsed.finances = INITIAL_FINANCES
-        migrated = true
-      }
       if (!parsed.categories) {
         parsed.categories = CATEGORIES
       } else {
@@ -58,10 +53,7 @@ const initialState = loadState() || {
   invoices: [INITIAL_INVOICE],
   settings: INITIAL_SETTINGS,
   categories: CATEGORIES,
-  finances: INITIAL_FINANCES,
 }
-
-const FINANCE_KEY = { expense: 'expenses', revenue: 'revenues' }
 
 function reducer(state, action) {
   switch (action.type) {
@@ -113,47 +105,8 @@ function reducer(state, action) {
       const next = { ...state, categories: state.categories.filter(c => c.id !== action.id) }
       saveState(next); return next
     }
-    case 'ADD_FINANCE_ACCOUNT': {
-      const { kind, account } = action.payload
-      const key = FINANCE_KEY[kind]
-      const next = { ...state, finances: { ...state.finances, [key]: [...state.finances[key], account] } }
-      saveState(next); return next
-    }
-    case 'RENAME_FINANCE_ACCOUNT': {
-      const { kind, id, name } = action.payload
-      const key = FINANCE_KEY[kind]
-      const next = {
-        ...state,
-        finances: { ...state.finances, [key]: state.finances[key].map(a => a.id === id ? { ...a, name } : a) },
-      }
-      saveState(next); return next
-    }
-    case 'DELETE_FINANCE_ACCOUNT': {
-      const { kind, id } = action.payload
-      const key = FINANCE_KEY[kind]
-      const next = { ...state, finances: { ...state.finances, [key]: state.finances[key].filter(a => a.id !== id) } }
-      saveState(next); return next
-    }
-    case 'SET_FINANCE_VALUE': {
-      const { kind, id, month, value } = action.payload
-      const key = FINANCE_KEY[kind]
-      const next = {
-        ...state,
-        finances: {
-          ...state.finances,
-          [key]: state.finances[key].map(a => {
-            if (a.id !== id) return a
-            const values = { ...a.values }
-            if (value === null || value === undefined) delete values[month]
-            else values[month] = value
-            return { ...a, values }
-          }),
-        },
-      }
-      saveState(next); return next
-    }
     case 'RESET': {
-      const fresh = { transactions: INITIAL_TRANSACTIONS, invoices: [INITIAL_INVOICE], settings: INITIAL_SETTINGS, categories: CATEGORIES, finances: INITIAL_FINANCES }
+      const fresh = { transactions: INITIAL_TRANSACTIONS, invoices: [INITIAL_INVOICE], settings: INITIAL_SETTINGS, categories: CATEGORIES }
       saveState(fresh); return fresh
     }
     default:
