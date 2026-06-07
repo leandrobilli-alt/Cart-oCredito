@@ -1,16 +1,18 @@
 import { useState } from 'react'
-import { LayoutDashboard, List, FileText, BarChart2, Settings, RotateCcw, Tag } from 'lucide-react'
+import { LayoutDashboard, List, FileText, BarChart2, Wallet, Settings, RotateCcw, Tag } from 'lucide-react'
 import { AppProvider, useApp } from './context/AppContext'
 import CategoryManagerModal from './components/CategoryManagerModal'
 import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
 import Invoices from './pages/Invoices'
 import Reports from './pages/Reports'
+import Financas from './pages/Financas'
 
 const TABS = [
   { id: 'dashboard',    label: 'Início',       icon: LayoutDashboard },
   { id: 'transactions', label: 'Lançamentos',  icon: List },
   { id: 'invoices',     label: 'Faturas',      icon: FileText },
+  { id: 'financas',     label: 'Finanças',     icon: Wallet },
   { id: 'reports',      label: 'Relatórios',   icon: BarChart2 },
 ]
 
@@ -96,6 +98,7 @@ function AppContent() {
     dashboard:    <Dashboard />,
     transactions: <Transactions />,
     invoices:     <Invoices />,
+    financas:     <Financas />,
     reports:      <Reports />,
   }
 
