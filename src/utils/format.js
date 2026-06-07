@@ -73,6 +73,19 @@ export function groupByCategory(transactions) {
   return map
 }
 
+// Encontra a fatura "atual" (a que está aberta e acumulando lançamentos hoje),
+// em vez de simplesmente pegar a primeira do array — que reflete a ordem de
+// criação/inserção, não a cronologia real das faturas.
+export function getCurrentInvoiceId(invoices) {
+  if (!invoices || !invoices.length) return ''
+  const today = format(new Date(), 'yyyy-MM-dd')
+  const open = invoices
+    .filter(i => i.closeDate >= today)
+    .sort((a, b) => a.closeDate.localeCompare(b.closeDate))
+  if (open.length) return open[0].id
+  return [...invoices].sort((a, b) => b.closeDate.localeCompare(a.closeDate))[0].id
+}
+
 export function downloadCSV(transactions, filename = 'relatorio.csv') {
   const header = 'Data,Descrição,Categoria,Valor,Parcela\n'
   const rows = transactions.map(t =>

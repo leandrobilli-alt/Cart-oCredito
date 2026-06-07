@@ -5,7 +5,7 @@ import {
 } from 'recharts'
 import { useApp } from '../context/AppContext'
 import { useCategories } from '../context/AppContext'
-import { formatCurrency, formatShortDate, groupByDay, groupByCategory } from '../utils/format'
+import { formatCurrency, formatShortDate, groupByDay, groupByCategory, getCurrentInvoiceId } from '../utils/format'
 import StatsCard from '../components/StatsCard'
 import TransactionItem from '../components/TransactionItem'
 import EditTransactionModal from '../components/EditTransactionModal'
@@ -27,7 +27,7 @@ export default function Dashboard() {
   const { state } = useApp()
   const { getCat } = useCategories()
   const [selected, setSelected] = useState(null)
-  const [activeInvoice, setActiveInvoice] = useState(state.invoices[0]?.id || '')
+  const [activeInvoice, setActiveInvoice] = useState(() => getCurrentInvoiceId(state.invoices) || state.invoices[0]?.id || '')
 
   const invoice = state.invoices.find(i => i.id === activeInvoice) || state.invoices[0]
 

@@ -7,7 +7,7 @@ import { Download, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { useApp, useCategories } from '../context/AppContext'
 import {
   formatCurrency, formatDate, groupByDay, groupByWeek, groupByMonth,
-  groupByCategory, downloadCSV, formatWeekLabel, formatShortDate,
+  groupByCategory, downloadCSV, formatWeekLabel, formatShortDate, getCurrentInvoiceId,
 } from '../utils/format'
 
 const PERIODS = [
@@ -45,7 +45,7 @@ export default function Reports() {
   const { state } = useApp()
   const { categories, getCat } = useCategories()
   const [period, setPeriod]     = useState('daily')
-  const [invoiceId, setInvoiceId] = useState(state.invoices[0]?.id || 'all')
+  const [invoiceId, setInvoiceId] = useState(() => getCurrentInvoiceId(state.invoices) || 'all')
   const [showAllMerchants, setShowAllMerchants] = useState(false)
   const [showAllPurchases, setShowAllPurchases] = useState(false)
 
