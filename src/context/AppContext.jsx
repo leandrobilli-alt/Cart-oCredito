@@ -9,6 +9,7 @@ function loadState() {
     const raw = localStorage.getItem('cc_dashboard_v2')
     if (raw) {
       const parsed = JSON.parse(raw)
+      let migrated = false
       if (!parsed.categories) {
         parsed.categories = CATEGORIES
       } else {
@@ -21,6 +22,22 @@ function loadState() {
           else parsed.categories.push(...newDefaults)
         }
       }
+
+      // migração: corrige lançamentos de pagamento/estorno importados com o sinal
+      // trocado por uma versão antiga do importador — eles ficaram salvos como
+      // compra positiva e por isso aparecem como o maior gasto da fatura
+      if (parsed.transactions) {
+        const REFUND_RE = /^(pagamento|pag\.?\s*antecip|estorno|reembolso|fatura paga)/i
+        parsed.transactions = parsed.transactions.map(t => {
+          if (t.amount > 0 && REFUND_RE.test(t.description || '')) {
+            migrated = true
+            return { ...t, amount: -t.amount, isRefund: true }
+          }
+          return t
+        })
+      }
+
+      if (migrated) saveState(parsed)
       return parsed
     }
   } catch {}
